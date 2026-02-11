@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='images/loading.gif') }}" type="image/gif">
+    <script src="{{ url_for('static', filename='js/dynamic_favicon.js') }}" defer></script>
+    <title>测试结果 - {{ mbti }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --theme-color: {{ info.theme_color }};
+            --theme-light: {{ info.theme_color }}33;
+            --theme-lighter: {{ info.theme_color }}1a;
+            --theme-dark: {{ info.dark_color }};
+        }
+        /* 浮动背景元素 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+            animation: float 30s infinite linear;
+        }
+
+        .floating-shape:nth-child(2) {
+            background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+            animation-duration: 35s;
+            animation-delay: -10s;
+        }
+
+        .floating-shape:nth-child(3) {
+            background: linear-gradient(45deg, rgba(244, 67, 54, 0.1), rgba(233, 30, 99, 0.1));
+            animation-duration: 40s;
+            animation-delay: -20s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+        
+        /* 动态主题 */
+        .theme-bg {
+            background: linear-gradient(135deg, var(--theme-color) 0%, var(--theme-dark) 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .theme-header {
+            background: linear-gradient(135deg, var(--theme-color) 0%, var(--theme-dark) 100%);
+            color: white;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .theme-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .theme-text {
+            color: var(--theme-color);
+        }
+        
+        .theme-btn {
+            background: var(--theme-color);
+            border-color: var(--theme-color);
+            color: white;
+        }
+        
+        .theme-btn:hover {
+            background: var(--theme-dark);
+            border-color: var(--theme-dark);
+            color: white;
+        }
+        
+        .theme-border {
+            border: 2px solid var(--theme-color);
+        }
+        
+        .theme-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 主要人格类型显示 */
+        .mbti-display {
+            font-size: 4rem;
+            font-weight: 900;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+            to { text-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 20px var(--theme-color); }
+        }
+        
+        /* 颜色圆圈 */
+        .color-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--theme-color) 0%, var(--theme-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-circle::before {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0.3;
+            filter: blur(10px);
+            z-index: -1;
+        }
+        
+        .color-circle:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* 分享和打印按钮 */
+        .action-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+        }
+        
+        .share-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+        }
+        
+        .print-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        
+        /* 页面进入动画 */
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .fade-in-up.delay-1 { animation-delay: 0.2s; }
+        .fade-in-up.delay-2 { animation-delay: 0.4s; }
+        .fade-in-up.delay-3 { animation-delay: 0.6s; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .mbti-display {
+                font-size: 3rem;
+            }
+            
+            .color-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .action-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        .badge-red {
+            background: linear-gradient(135deg, #FF4500 0%, #FF6B6B 100%);
+            color: white;
+        }
+        
+        .badge-blue {
+            background: linear-gradient(135deg, #fcfcfc 0%, #ffffff 100%);
+            color: white;
+        }
+        
+        .badge-green {
+            background: linear-gradient(135deg, #32CD32 0%, #3CB371 100%);
+            color: white;
+        }
+        
+        .badge-yellow {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+        }
+    </style>
+</head>
+<body class="theme-bg">
+    <!-- 页面加载覆盖层 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-inner">
+            <img src="{{ url_for('static', filename='images/loading.gif') }}" alt="加载中" class="loading-gif">
+            <div class="loader-text">加载中...</div>
+        </div>
+    </div>
+    <!-- 浮动背景元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape" style="width: 60px; height: 60px; left: 5%;"></div>
+        <div class="floating-shape" style="width: 40px; height: 40px; left: 15%;"></div>
+        <div class="floating-shape" style="width: 80px; height: 80px; left: 85%;"></div>
+        <div class="floating-shape" style="width: 50px; height: 50px; left: 75%;"></div>
+        <div class="floating-shape" style="width: 70px; height: 70px; left: 45%;"></div>
+    </div>
+
+    <!-- 分享和打印按钮 -->
+    <div class="action-buttons">
+        <button class="action-btn share-btn" onclick="shareResult()" title="分享结果">
+            <i class="bi bi-share"></i>
+        </button>
+        <button class="action-btn print-btn" onclick="printResult()" title="打印结果">
+            <i class="bi bi-printer"></i>
+        </button>
+    </div>
+    <div class="container py-5">
+        <div class="card theme-card shadow-lg animate-card">
+            <!-- 头部 - 显示人格类型和颜色组 -->
+            <div class="card-header theme-header text-center py-5">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="mbti-display mb-3">{{ mbti }}</div>
+                    <div class="h3 mb-3">{{ info.nickname }}</div>
+                    <div class="group-badge badge-{{ info.color_group }}">
+                        {{ group_info.name }} · {{ info.group_name }}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p class="lead mb-0">{{ info.description }}</p>
+                </div>
+            </div>
+
+            <!-- 主体内容 -->
+            <div class="card-body">
+                <!-- 颜色组信息 -->
+                <div class="row mb-5 fade-in-up delay-1">
+                    <div class="col-12">
+                        <div class="card mb-4">
+                            <div class="card-header theme-header">
+                                <i class="bi bi-palette me-2"></i>您的颜色组特质
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h4 class="theme-text">{{ group_info.name }}</h4>
+                                        <p>{{ group_info.description }}</p>
+                                        
+                                        <div class="row mt-4">
+                                            <div class="col-md-6">
+                                                <h5><i class="bi bi-check-circle-fill me-2 theme-text"></i>核心优势</h5>
+                                                <p>{{ group_info.strength }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h5><i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>潜在挑战</h5>
+                                                <p>{{ group_info.challenge }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-light mt-3">
+                                            <i class="bi bi-lightbulb-fill me-2 theme-text"></i>
+                                            <strong>专家建议：</strong> {{ group_info.tip }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="color-circle mx-auto">
+                                            {{ info.color_group|upper }}组
+                                        </div>
+                                        <p class="mt-3 fw-bold">{{ info.group_name }}特质：</p>
+                                        <div class="d-flex flex-wrap justify-content-center">
+                                            {% for trait in info.group_traits %}
+                                            <span class="badge bg-light text-dark me-2 mb-2">{{ trait }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 核心特征和雷达图 -->
+                <div class="row g-4 mb-5 fade-in-up delay-2">
+                    <!-- 人格特征 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header theme-header">
+                                <i class="bi bi-stars me-2"></i>{{ mbti }} 核心特征
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <h5 class="theme-text"><i class="bi bi-check-circle-fill me-2"></i>主要特质</h5>
+                                    <ul class="list-group list-group-flush">
+                                        {% for trait in info.traits %}
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <i class="bi bi-check2 theme-text me-2"></i>
+                                            {{ trait }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <h5 class="theme-text"><i class="bi bi-lightning-charge-fill me-2"></i>独特优势</h5>
+                                    <ul class="list-group list-group-flush">
+                                        {% for strength in info.strengths %}
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <i class="bi bi-star-fill theme-text me-2"></i>
+                                            {{ strength }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 雷达图 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header theme-header">
+                                <i class="bi bi-graph-up me-2"></i>特质雷达图
+                            </div>
+                            <div class="card-body">
+                                <div class="trait-chart-container" style="height: 400px;">
+                                    <canvas id="traitChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 详细分析 -->
+                <div class="row g-4 fade-in-up delay-3">
+                    <!-- 发展建议 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-warning">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>成长建议
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for item in info.weaknesses %}
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                                        {{ item }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 职业推荐 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header theme-header">
+                                <i class="bi bi-briefcase-fill me-2"></i>适合职业领域
+                            </div>
+                            <div class="card-body">
+                                <div class="row row-cols-2 g-3">
+                                    {% for career in info.careers %}
+                                    <div class="col">
+                                        <div class="card text-center h-100 theme-border">
+                                            <div class="card-body">
+                                                <i class="bi bi-building fs-5 theme-text"></i>
+                                                <div class="mt-2 fw-medium">{{ career }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 人格提示 -->
+                <div class="alert theme-border mt-5 fade-in-up delay-3" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+                    <div class="d-flex">
+                        <i class="bi bi-info-circle-fill me-3 fs-3 theme-text"></i>
+                        <div>
+                            <h5 class="theme-text">{{ mbti }} 人格小贴士</h5>
+                            <p class="mb-0">
+                                {% if mbti[0] == 'E' %}
+                                    作为外向型人格，您通过与他人互动获得能量，多参与社交活动会让您充满活力！
+                                {% else %}
+                                    作为内向型人格，您需要独处时间恢复精力，记得给自己留出足够的个人空间。
+                                {% endif %}
+                                
+                                {% if mbti[1] == 'S' %}
+                                    您注重实际细节，善于处理具体事务，这使您在执行任务时非常高效。
+                                {% else %}
+                                    您擅长把握整体概念和未来可能性，创新思维是您的强项。
+                                {% endif %}
+                                
+                                {% if mbti[2] == 'T' %}
+                                    您的决策基于逻辑分析，保持客观理性是您的优势。
+                                {% else %}
+                                    您在做决定时考虑他人感受，共情能力是您的宝贵特质。
+                                {% endif %}
+                                
+                                {% if mbti[3] == 'J' %}
+                                    您喜欢有计划的生活，组织能力帮助您高效完成任务。
+                                {% else %}
+                                    您灵活适应变化，开放态度让您能把握意外机会。
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 返回按钮 -->
+                <div class="text-center mt-4">
+                    <a href="/" class="btn btn-lg theme-btn px-5 py-3">
+                        <i class="bi bi-house-door me-2"></i>返回首页
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表脚本 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        // 特征雷达图
+        new Chart(document.getElementById('traitChart'), {
+            type: 'radar',
+            data: {
+                labels: {{ info.traits|tojson }},
+                datasets: [{
+                    label: '特征强度',
+                    data: {{ info.scores|tojson }},
+                    backgroundColor: '{{ info.theme_color }}33',
+                    borderColor: '{{ info.theme_color }}',
+                    pointBackgroundColor: '{{ info.theme_color }}',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        min: 0,
+                        ticks: {
+                            display: false,
+                            stepSize: 2
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) { 
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                return '强度值: ' + context.formattedValue + '/10';
+                            }
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // 添加动态效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加卡片出现动画
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = 0;
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    card.style.opacity = 1;
+                    card.style.transform = 'translateY(0)';
+                }, 200 + index * 150);
+            });
+
+            // 添加颜色组徽章动画
+            const groupBadge = document.querySelector('.group-badge');
+            if (groupBadge) {
+                setInterval(() => {
+                    groupBadge.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        groupBadge.style.transform = 'scale(1)';
+                    }, 1000);
+                }, 4000);
+            }
+
+            // 添加职业卡片点击效果
+            const careerCards = document.querySelectorAll('.card.text-center.h-100.theme-border');
+            careerCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+        });
+
+        // 分享功能
+        function shareResult() {
+            const mbti = '{{ mbti }}';
+            const nickname = '{{ info.nickname }}';
+            const text = '我的MBTI人格测试结果是：' + mbti + ' - ' + nickname + '！快来测测你的吧！';
+            const url = window.location.href;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'MBTI人格测试结果',
+                    text: text,
+                    url: url
+                });
+            } else {
+                // 复制到剪贴板
+                navigator.clipboard.writeText(text + ' ' + url).then(() => {
+                    alert('结果已复制到剪贴板！');
+                });
+            }
+        }
+
+        // 打印功能
+        function printResult() {
+            window.print();
+        }
+    </script>
+</body>
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+<script src="{{ url_for('static', filename='js/parallax.js') }}" defer></script>
+</html>

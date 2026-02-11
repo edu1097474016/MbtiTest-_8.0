@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='images/loading.gif') }}" type="image/gif">
+    <script src="{{ url_for('static', filename='js/dynamic_favicon.js') }}" defer></script>
+    <title>福利领取结果</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #fff5f5;
+        }
+        .fail-message {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        .fail-title {
+            color: #ff0036;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .fail-reason {
+            color: #666;
+            margin-top: 20px;
+        }
+        .retry-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #ff0036;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面加载覆盖层 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-inner">
+            <img src="{{ url_for('static', filename='images/loading.gif') }}" alt="加载中" class="loading-gif">
+            <div class="loader-text">加载中...</div>
+        </div>
+    </div>
+    <!-- 浮动背景元素（视觉增强） -->
+    <div class="floating-shapes">
+        <div class="floating-shape" style="width:80px;height:80px;left:10%;top:12%;" data-speed="0.02"></div>
+        <div class="floating-shape" style="width:60px;height:60px;right:12%;top:20%;" data-speed="0.03"></div>
+    </div>
+    <div class="fail-message">
+        <div class="fail-title">🚨 领取福利失败！</div>
+        <p>抱歉，您被骗了！</p>
+        <div class="fail-reason">
+            这只是一个演示页面，实际并无福利可领。<br>
+            请勿轻易相信网上夸张的促销信息！
+        </div>
+        <button class="retry-button" onclick="window.location.href='student_login.html'">
+            返回上一页
+        </button>
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+<script src="{{ url_for('static', filename='js/parallax.js') }}" defer></script>
+</html>

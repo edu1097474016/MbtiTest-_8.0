@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>选择测试长度</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="{{ url_for('static', filename='images/loading.gif') }}" type="image/gif">
+    <script src="{{ url_for('static', filename='js/dynamic_favicon.js') }}" defer></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* 浮动背景元素 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+            animation: float 20s infinite linear;
+        }
+
+        .floating-shape:nth-child(2) {
+            background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+            animation-duration: 25s;
+            animation-delay: -5s;
+        }
+
+        .floating-shape:nth-child(3) {
+            background: linear-gradient(45deg, rgba(244, 67, 54, 0.1), rgba(233, 30, 99, 0.1));
+            animation-duration: 30s;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        .test-length-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-length-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .test-length-card:hover::before {
+            left: 100%;
+        }
+
+        .test-length-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .test-length-card.short {
+            border-top: 6px solid #4CAF50;
+        }
+
+        .test-length-card.medium {
+            border-top: 6px solid #FFC107;
+        }
+
+        .test-length-card.full {
+            border-top: 6px solid #F44336;
+        }
+
+        .length-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 2.8rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .length-icon::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0.3;
+            z-index: -1;
+            filter: blur(10px);
+        }
+
+        .test-length-card:hover .length-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .short .length-icon {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+        }
+
+        .medium .length-icon {
+            background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+            color: white;
+        }
+
+        .full .length-icon {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+            color: white;
+        }
+
+        .length-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(45deg, #333, #666);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .length-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .test-length-card:hover .length-title::after {
+            width: 80px;
+        }
+
+        .short .length-title::after {
+            background: #4CAF50;
+        }
+
+        .medium .length-title::after {
+            background: #FFC107;
+        }
+
+        .full .length-title::after {
+            background: #F44336;
+        }
+
+        .length-description {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 30px;
+            min-height: 90px;
+            line-height: 1.6;
+        }
+
+        .length-btn {
+            border-radius: 50px;
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: #000 !important; /* 按钮文字改为黑色 */
+        }
+
+        .length-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: transform 0.6s ease;
+            transform: scaleX(0);
+            transform-origin: right;
+        }
+
+        .length-btn:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .length-btn:active {
+            transform: translateY(2px);
+        }
+
+        .short .length-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .short .length-btn::before {
+            background: linear-gradient(135deg, #8BC34A 0%, #4CAF50 100%);
+        }
+
+        .medium .length-btn {
+            background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3);
+        }
+
+        .medium .length-btn::before {
+            background: linear-gradient(135deg, #FF9800 0%, #FFC107 100%);
+        }
+
+        .full .length-btn {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(244, 67, 54, 0.3);
+        }
+
+        .full .length-btn::before {
+            background: linear-gradient(135deg, #E91E63 0%, #F44336 100%);
+        }
+
+        .length-btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .length-duration {
+            font-size: 0.95rem;
+            color: #777;
+            margin-top: 20px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .card-container {
+            perspective: 1500px;
+        }
+
+        .test-length-card {
+            transform-style: preserve-3d;
+        }
+
+        /* 加载状态 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-gif {
+            width: 80px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .test-length-card {
+                margin-bottom: 40px;
+                border-radius: 20px;
+            }
+
+            .length-icon {
+                width: 75px;
+                height: 75px;
+                font-size: 2.2rem;
+            }
+
+            .length-title {
+                font-size: 1.7rem;
+            }
+
+            .length-description {
+                min-height: auto;
+                margin-bottom: 25px;
+                font-size: 1rem;
+            }
+
+            .length-btn {
+                padding: 12px 28px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .length-icon {
+                width: 65px;
+                height: 65px;
+                font-size: 2rem;
+            }
+
+            .length-title {
+                font-size: 1.5rem;
+            }
+
+            .length-description {
+                font-size: 0.95rem;
+            }
+
+            .length-btn {
+                padding: 10px 24px;
+                font-size: 1rem;
+            }
+        }
+
+        /* 页面进入动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .test-length-card {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .test-length-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .test-length-card:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out;
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <!-- 页面加载覆盖层 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-inner">
+            <img src="{{ url_for('static', filename='images/loading.gif') }}" alt="加载中" class="loading-gif">
+            <div class="loader-text">加载中...</div>
+        </div>
+    </div>
+    <!-- 浮动背景元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape" style="width: 80px; height: 80px; left: 10%;"></div>
+        <div class="floating-shape" style="width: 60px; height: 60px; left: 20%;"></div>
+        <div class="floating-shape" style="width: 100px; height: 100px; left: 70%;"></div>
+        <div class="floating-shape" style="width: 70px; height: 70px; left: 80%;"></div>
+        <div class="floating-shape" style="width: 90px; height: 90px; left: 50%;"></div>
+    </div>
+
+    <!-- 加载覆盖层 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <img src="{{ url_for('static', filename='images/loading.gif') }}" alt="加载中" class="loading-gif">
+            <h4>正在准备测试...</h4>
+            <p>请稍候，正在为您加载题目</p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center fade-in-up">
+                <h1 class="display-4 fw-bold mb-3 text-dark">选择测试长度</h1>
+                <p class="lead text-light mb-0">根据您的时间和需求，选择合适的测试长度</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <!-- 20题 - 短测试 -->
+            <div class="col-lg-4 col-md-6 card-container mb-4">
+                <div class="test-length-card short h-100 p-4">
+                    <div class="text-center">
+                        <div class="length-icon">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h3 class="length-title">快速测试</h3>
+                        <p class="length-description">
+                            只需完成20道核心题目，快速了解您的基本人格类型。适合时间有限或初次接触MBTI的用户。
+                        </p>
+                        <form method="POST" onsubmit="showLoading()">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="test_length" value="20">
+                            <button type="submit" class="length-btn">
+                                <i class="bi bi-play-circle me-2"></i>开始20题测试
+                            </button>
+                            <span class="length-duration">约5-8分钟</span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 60题 - 标准测试 -->
+            <div class="col-lg-4 col-md-6 card-container mb-4">
+                <div class="test-length-card medium h-100 p-4">
+                    <div class="text-center">
+                        <div class="length-icon">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h3 class="length-title">标准测试</h3>
+                        <p class="length-description">
+                            完成60道精选题目，获得更准确的人格分析报告。平衡了测试时长和结果准确性。
+                        </p>
+                        <form method="POST" onsubmit="showLoading()">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="test_length" value="60">
+                            <button type="submit" class="length-btn">
+                                <i class="bi bi-play-circle me-2"></i>开始60题测试
+                            </button>
+                            <span class="length-duration">约15-20分钟</span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 120题 - 完整测试 -->
+            <div class="col-lg-4 col-md-6 card-container mb-4">
+                <div class="test-length-card full h-100 p-4">
+                    <div class="text-center">
+                        <div class="length-icon">
+                            <i class="bi bi-award"></i>
+                        </div>
+                        <h3 class="length-title">完整测试</h3>
+                        <p class="length-description">
+                            完成全部120道题目，获得最全面、最深入的人格分析报告。适合追求精准结果的用户。
+                        </p>
+                        <form method="POST" onsubmit="showLoading()">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="test_length" value="120">
+                            <button type="submit" class="length-btn">
+                                <i class="bi bi-play-circle me-2"></i>开始120题测试
+                            </button>
+                            <span class="length-duration">约25-35分钟</span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-8 text-center fade-in-up">
+                <div class="card bg-light border-0 p-4" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.9);">
+                    <h4 class="mb-4 text-dark">测试长度说明</h4>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="badge bg-success me-2 fs-6">20题</div>
+                                <div class="text-dark">每个维度5题</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="badge bg-warning me-2 fs-6">60题</div>
+                                <div class="text-dark">每个维度15题</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="badge bg-danger me-2 fs-6">120题</div>
+                                <div class="text-dark">完整题目集</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mb-0 text-muted">
+                        所有测试版本都经过精心设计，确保每个维度的题目分布均匀，从而提供准确可靠的人格分析结果。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // 添加卡片悬停效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.test-length-card');
+
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-20px) rotateY(5deg) scale(1.02)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) rotateY(0) scale(1)';
+                });
+            });
+
+            // 移动端点击效果
+            if (window.innerWidth <= 768) {
+                cards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        cards.forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+
+                        // 添加动画效果
+                        this.style.animation = 'pulse 0.6s';
+                        setTimeout(() => {
+                            this.style.animation = '';
+                        }, 600);
+                    });
+                });
+            }
+
+            // 添加页面滚动动画
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 观察需要动画的元素
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(50px)';
+                el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+    </script>
+    <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/parallax.js') }}" defer></script>
+    </body>
+</html>

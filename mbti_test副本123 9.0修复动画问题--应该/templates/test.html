@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MBTI测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="{{ url_for('static', filename='images/loading.gif') }}" type="image/gif">
+    <script src="{{ url_for('static', filename='js/dynamic_favicon.js') }}" defer></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* 浮动背景元素 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+            animation: float 25s infinite linear;
+        }
+
+        .floating-shape:nth-child(2) {
+            background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+            animation-duration: 30s;
+            animation-delay: -8s;
+        }
+
+        .floating-shape:nth-child(3) {
+            background: linear-gradient(45deg, rgba(244, 67, 54, 0.1), rgba(233, 30, 99, 0.1));
+            animation-duration: 35s;
+            animation-delay: -15s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        .test-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 20px 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .test-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .test-length-badge {
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .test-length-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .length-20 {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+        }
+
+        .length-60 {
+            background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+            color: white;
+        }
+
+        .length-120 {
+            background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+            color: white;
+        }
+
+        /* 固定在顶部的进度条 */
+        .sticky-progress {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .sticky-progress.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transition: width 0.6s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* 保存提示 */
+        .save-indicator {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .save-indicator.show {
+            transform: translateX(0);
+        }
+
+        .animate-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-card {
+            padding: 30px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .question-card:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .question-card:hover {
+            background: rgba(102, 126, 234, 0.02);
+            border-radius: 15px;
+            margin-left: -10px;
+            margin-right: -10px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+
+        .question-card .badge {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .option-container {
+            margin-top: 20px;
+        }
+
+        .option-item {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .question-radio {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .option-label {
+            display: block;
+            padding: 18px 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option-label:hover::before {
+            left: 100%;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .question-radio:checked + .option-label {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .question-radio:checked + .option-label::after {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline-secondary {
+            border-radius: 20px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            transform: scale(1.05);
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .test-header {
+                padding: 15px 20px;
+                margin-bottom: 20px;
+            }
+
+            .question-card {
+                padding: 20px 15px;
+            }
+
+            .question-card:hover {
+                margin-left: -5px;
+                margin-right: -5px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .option-label {
+                padding: 15px 20px;
+            }
+
+            .option-text {
+                font-size: 1rem;
+            }
+
+            .progress-container {
+                padding: 15px;
+            }
+        }
+
+        /* 页面进入动画 */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <!-- 页面加载覆盖层 -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-inner">
+            <img src="{{ url_for('static', filename='images/loading.gif') }}" alt="加载中" class="loading-gif">
+            <div class="loader-text">加载中...</div>
+        </div>
+    </div>
+    <!-- 浮动背景元素 -->
+    <div class="floating-shapes">
+        <div class="floating-shape" style="width: 60px; height: 60px; left: 5%;"></div>
+        <div class="floating-shape" style="width: 40px; height: 40px; left: 15%;"></div>
+        <div class="floating-shape" style="width: 80px; height: 80px; left: 85%;"></div>
+        <div class="floating-shape" style="width: 50px; height: 50px; left: 75%;"></div>
+        <div class="floating-shape" style="width: 70px; height: 70px; left: 45%;"></div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="container mt-3">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container py-5 fade-in">
+        <div class="test-header">
+            <div class="test-info">
+                <div>
+                    <h3 class="mb-1">MBTI性格测试</h3>
+                    <div class="text-muted">根据您的选择进行测试，请认真作答</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="test-length-badge length-{{ session.get('test_length', 20) }}">
+                        {{ session.get('test_length', 20) }}题测试
+                    </span>
+                    <a href="/select_test_length" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-repeat me-1"></i>重新选择
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 固定在顶部的进度条 -->
+        <div class="sticky-progress">
+            <div class="progress-container">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="fw-bold">测试进度</span>
+                        <span id="progress-percent" class="ms-2 fw-bold text-primary">{{ progress|int }}%</span>
+                    </div>
+                    <div class="text-muted small">
+                        <span id="answered-count">0</span> / {{ questions|length }} 题已回答
+                    </div>
+                </div>
+                <div class="progress">
+                    <div id="test-progress"
+                         class="progress-bar bg-info progress-bar-striped progress-bar-animated"
+                         role="progressbar"
+                         style="width: {{ progress }}%"
+                         aria-valuenow="{{ progress }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 保存提示 -->
+        <div class="save-indicator" id="save-indicator">
+            <i class="bi bi-check-circle me-1"></i>进度已保存
+        </div>
+
+        <div class="card shadow-lg animate-card">
+            <div class="card-body">
+                <form method="POST" id="test-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    {% for q in questions %}
+                    <div class="question-card" id="question-{{ loop.index0 }}">
+                        <p class="fw-bold fs-5 text-dark mb-3">
+                            <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                            {{ q.text }}
+                        </p>
+                        <div class="option-container">
+                            <div class="option-item">
+                                <input type="radio"
+                                       name="question_{{ loop.index0 }}"
+                                       id="q{{ loop.index0 }}a"
+                                       value="A"
+                                       required
+                                       data-question="{{ loop.index0 }}"
+                                       class="question-radio">
+                                <label class="option-label" for="q{{ loop.index0 }}a">
+                                    <span class="option-text">{{ q.options[0] }}</span>
+                                </label>
+                            </div>
+                            <div class="option-item">
+                                <input type="radio"
+                                       name="question_{{ loop.index0 }}"
+                                       id="q{{ loop.index0 }}b"
+                                       value="B"
+                                       required
+                                       data-question="{{ loop.index0 }}"
+                                       class="question-radio">
+                                <label class="option-label" for="q{{ loop.index0 }}b">
+                                    <span class="option-text">{{ q.options[1] }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-hover btn-lg">
+                            <i class="bi bi-send me-2"></i>提交测试
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalQuestions = {{ questions|length }};
+        const progressBar = document.getElementById('test-progress');
+        const progressPercent = document.getElementById('progress-percent');
+        const answeredCountEl = document.getElementById('answered-count');
+        const saveIndicator = document.getElementById('save-indicator');
+        const stickyProgress = document.querySelector('.sticky-progress');
+
+        let lastScrollPos = window.scrollY;
+        let hideTimeout = null;
+
+        // 滚动时隐藏/显示进度条
+        window.addEventListener('scroll', function() {
+            const currentScrollPos = window.scrollY;
+
+            // 清除之前的超时
+            if (hideTimeout) clearTimeout(hideTimeout);
+
+            // 显示进度条
+            stickyProgress.classList.remove('hidden');
+
+            // 向下滚动时隐藏，向上滚动时显示
+            if (currentScrollPos > lastScrollPos && currentScrollPos > 100) {
+                // 设置延迟隐藏
+                hideTimeout = setTimeout(() => {
+                    stickyProgress.classList.add('hidden');
+                }, 2000);
+            } else {
+                stickyProgress.classList.remove('hidden');
+            }
+
+            lastScrollPos = currentScrollPos;
+        });
+
+        // 从sessionStorage恢复答案
+        function restoreAnswers() {
+            let answered = 0;
+            for (let i = 0; i < totalQuestions; i++) {
+                const answer = sessionStorage.getItem('question_' + i);
+                if (answer) {
+                    const selector = 'input[name="question_' + i + '"][value="' + answer + '"]';
+                    const radio = document.querySelector(selector);
+                    if (radio) {
+                        radio.checked = true;
+                        answered++;
+                    }
+                }
+            }
+            return answered;
+        }
+
+        // 更新进度
+        function updateProgress(answered) {
+            const progress = Math.round((answered / totalQuestions) * 100);
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressPercent.textContent = progress + '%';
+            answeredCountEl.textContent = answered + '/' + totalQuestions;
+
+            // 更新进度条颜色和样式
+            if (progress < 30) {
+                progressBar.style.background = 'linear-gradient(90deg, #F44336 0%, #E91E63 100%)';
+            } else if (progress < 70) {
+                progressBar.style.background = 'linear-gradient(90deg, #FFC107 0%, #FF9800 100%)';
+            } else {
+                progressBar.style.background = 'linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%)';
+            }
+
+            return progress;
+        }
+
+        // 保存进度到服务器
+        function saveProgressToServer(progress) {
+            fetch('/save_progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                },
+                body: JSON.stringify({ progress: progress })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // 显示保存提示
+                    saveIndicator.classList.add('show');
+                    setTimeout(() => {
+                        saveIndicator.classList.remove('show');
+                    }, 2000);
+                }
+            });
+        }
+
+        // 初始化恢复答案
+        let answered = restoreAnswers();
+        let progress = updateProgress(answered);
+        saveProgressToServer(progress);
+
+        // 监听选项变化
+        document.querySelectorAll('.question-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const questionId = this.dataset.question;
+                sessionStorage.setItem('question_' + questionId, this.value);
+
+                // 重新计算已回答问题数
+                answered = document.querySelectorAll('.question-radio:checked').length;
+                progress = updateProgress(answered);
+
+                // 自动保存进度
+                saveProgressToServer(progress);
+
+                // 移动端自动滚动到下一题
+                if (window.innerWidth <= 768) {
+                    const nextId = parseInt(questionId) + 1;
+                    const nextQuestion = document.getElementById('question-' + nextId);
+
+                    if (nextQuestion) {
+                        const progressBarHeight = document.querySelector('.sticky-progress').offsetHeight;
+                        const elementTop = nextQuestion.getBoundingClientRect().top;
+                        const elementHeight = nextQuestion.offsetHeight;
+                        const offsetPosition = elementTop + window.pageYOffset - (window.innerHeight / 2) + (elementHeight / 2) - progressBarHeight;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+
+                // 添加选择动画效果
+                const label = this.nextElementSibling;
+                label.style.animation = 'pulse 0.3s';
+                setTimeout(() => {
+                    label.style.animation = '';
+                }, 300);
+            });
+        });
+
+        // 表单提交时清除存储
+        document.getElementById('test-form').addEventListener('submit', function() {
+            for (let i = 0; i < totalQuestions; i++) {
+                sessionStorage.removeItem('question_' + i);
+            }
+            sessionStorage.removeItem('progress');
+        });
+
+        // 点击进度条时滚动到顶部
+        stickyProgress.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 防止iOS缩放
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // 阻止双击缩放
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    });
+</script>
+</body>
+<script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+<script src="{{ url_for('static', filename='js/parallax.js') }}" defer></script>
+</html>
